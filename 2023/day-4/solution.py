@@ -1,4 +1,3 @@
-import math
 from dataclasses import dataclass
 
 
@@ -9,10 +8,12 @@ class Card:
     play_nums: set[str]
 
     def get_card_score(self):
-        return math.floor(2**(len(self.win_nums & self.play_nums) - 1))
+        matched = len(self.win_nums & self.play_nums)
+        return 0 if not matched else 1 << (matched - 1)
 
     def matches(self):
         return len(self.win_nums & self.play_nums)
+
 
 def parse_input(data: list[str]) -> list[Card]:
     cards = []
@@ -23,6 +24,7 @@ def parse_input(data: list[str]) -> list[Card]:
         play_nums = set(play_nums.split())
         cards.append(Card(id=id, win_nums=win_nums, play_nums=play_nums))
     return cards
+
 
 # solution 2
 def get_total_instances(current, data, memo={}):
@@ -41,7 +43,6 @@ def get_total_instances(current, data, memo={}):
 
     memo[key] = total
     return memo[key]
-
 
 
 if __name__ == "__main__":
@@ -63,9 +64,3 @@ if __name__ == "__main__":
     # solution 2
     scratchcards = [(card.id,card.matches()) for card in cards]
     print(get_total_instances(scratchcards, scratchcards))
-
-
-
-
-
-
