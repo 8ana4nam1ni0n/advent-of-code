@@ -62,7 +62,7 @@ def solution_1(start: tuple[int, int], maze: list[str]) -> int:
 
         max_steps = max(steps, max_steps)
 
-        for (dy, dx), direction in coord_to_cardinal_point.items():
+        for (dy, dx) in coord_to_cardinal_point:
             nexxt = y + dy, x + dx
             current = y, x
             if is_valid_move(nexxt, current, visited, maze):
