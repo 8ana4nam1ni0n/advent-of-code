@@ -52,6 +52,9 @@ def get_starting_point(maze: list[str]) -> tuple[int, int]:
     return (0, 0)
 
 
+# An optimization for this could be just calculate the path of the loop
+# and divide the number of visited nodes by 2 since the farthest point will always
+# be in the middle of the loop
 def solution_1(start: tuple[int, int], maze: list[str]) -> int:
     queue = deque([(start, 0)])
     max_steps = 0
@@ -70,6 +73,48 @@ def solution_1(start: tuple[int, int], maze: list[str]) -> int:
                 queue.append((nexxt, steps + 1))
 
     return max_steps
+
+
+# Solution 2
+def get_nodes_in_loop(start: tuple[int, int], maze: list[str]) -> list[tuple[int, int]]:
+    queue = deque([start])
+    visited = [start]
+
+    while queue:
+        y, x = queue.popleft()
+
+        for dy, dx in coord_to_cardinal_point:
+            nexxt = y + dy, x + dx
+            current = y, x
+            if is_valid_move(nexxt, current, visited, maze):
+                visited.append(nexxt)
+                queue.append(nexxt)
+                # we break since we dont need to path find we need all nodes
+                # to be connected for the sholace algorithm to work
+                break
+
+    return visited
+
+
+def sholace(coordinates) -> float:
+    n = len(coordinates)
+    area = 0
+
+    for i in range(n):
+        x1, y1 = coordinates[i]
+        x2, y2 = coordinates[(i + 1) % n]
+        area += x1 * y2
+        area -= x2 * y1
+
+    return abs(area) / 2
+
+
+# this is picks theorem
+def get_tiles_within_loop(coordinates):
+    area = sholace(coordinates)
+    b = len(coordinates)
+    i = area - b/2 + 1
+    return i
 
 
 def print_maze(maze):
@@ -93,3 +138,6 @@ if __name__ == "__main__":
     start = get_starting_point(maze)
 
     print(solution_1(start, maze))
+
+    nodes = get_nodes_in_loop(start, maze)
+    print(get_tiles_within_loop(nodes))
