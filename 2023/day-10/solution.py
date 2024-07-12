@@ -1,10 +1,12 @@
+from collections import deque
 
-directions = {
-    (1, 0): "east",
-    (-1, 0): "west",
-    (0, 1): "north",
-    (0, -1): "south"
+coord_to_cardinal_point = {
+    (0, 1): "east",
+    (0, -1): "west",
+    (-1, 0): "north",
+    (1, 0): "south"
 }
+
 
 path = {
     '|': ('north', 'south'),
@@ -28,17 +30,54 @@ def get_data(filename: str) -> str:
         return f.read()
 
 
-def is_valid_move(next, current, visited, maze):
+def is_valid_move(nexxt, current, visited, maze):
 
-    movement = directions[(current[0] - next[0], next[1] - current[1])]
+    if nexxt[0] < 0 or nexxt[1] < 0 or nexxt[0] >= len(maze) or nexxt[1] >= len(maze[0]):
+        return False
+
+    movement = coord_to_cardinal_point[(nexxt[0] - current[0], nexxt[1] - current[1])]
     current_symbol = maze[current[0]][current[1]]
-    next_symbol = maze[next[0]][next[1]]
+    next_symbol = maze[nexxt[0]][nexxt[1]]
 
     valid_current, valid_next = valid_movements[movement]
 
-    return next not in visited and current_symbol in valid_current and next_symbol in valid_next
+    return nexxt not in visited and current_symbol in valid_current and next_symbol in valid_next
 
 
+def get_starting_point(maze: list[str]) -> tuple[int, int]:
+    for i, row in enumerate(maze):
+        for j, col in enumerate(row):
+            if 'S' in col:
+                return (i, j)
+    return (0, 0)
+
+
+def solution_1(start: tuple[int, int], maze: list[str]) -> int:
+    queue = deque([(start, 0)])
+    max_steps = 0
+    visited = set([start])
+
+    while queue:
+        (y, x), steps = queue.popleft()
+
+        max_steps = max(steps, max_steps)
+
+        for (dy, dx), direction in coord_to_cardinal_point.items():
+            nexxt = y + dy, x + dx
+            current = y, x
+            if is_valid_move(nexxt, current, visited, maze):
+                visited.add(nexxt)
+                queue.append((nexxt, steps + 1))
+
+    return max_steps
+
+
+def print_maze(maze):
+    rows, cols = len(maze), len(maze[0])
+    for row in range(rows):
+        if row == 0:
+            print(f" : {' '.join(map(str, range(cols)))}")
+        print(f"{row}: {' '.join(maze[row])}")
 
 
 if __name__ == "__main__":
@@ -51,6 +90,6 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     maze = get_data(filename).splitlines()
 
-    print(maze)
+    start = get_starting_point(maze)
 
-
+    print(solution_1(start, maze))
