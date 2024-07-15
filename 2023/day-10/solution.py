@@ -7,17 +7,6 @@ coord_to_cardinal_point = {
     (1, 0): "south"
 }
 
-
-path = {
-    '|': ('north', 'south'),
-    '-': ('east', 'west'),
-    'L': ('north', 'east'),
-    'J': ('north', 'west'),
-    '7': ('south', 'west'),
-    'F': ('south', 'east'),
-    '.': ()
-}
-
 valid_movements = {
     "east": ({"S", "-" , "F" , "L"},{ "7" , "J" , "-"}),
     "west": ({"S", "-" , "7" , "J"},{ "L" , "F" , "-"}),
@@ -109,7 +98,8 @@ def sholace(coordinates) -> float:
     return abs(area) / 2
 
 
-# this is picks theorem
+# this is picks theorem which also calculates the area of a polygon
+# but if solved by I can give you the inner tiles (what we need)
 def get_tiles_within_loop(coordinates):
     area = sholace(coordinates)
     b = len(coordinates)
