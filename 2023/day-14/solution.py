@@ -32,9 +32,6 @@ def solution_1(grid: Grid) -> int:
 
 
 # Solution 2
-
-# This allows us to reuse the move_north function to perform the cycles
-# of north, west, south, east
 def rotate_clockwise(grid: Grid) -> Grid:
     return [list(row) for row in zip(*grid[::-1])]
 
