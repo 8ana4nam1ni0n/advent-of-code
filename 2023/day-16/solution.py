@@ -40,14 +40,16 @@ def get_energized_tiles(grid: Grid) -> int:
     q = deque([((0, 0), DIRECTION['e'])])
 
     while q:
+        print(f"Queue: {q}")
         (r, c), (dr, dc) = q.popleft()
         nr, nc = r + dr, c + dc
 
+        # TODO need to mark nodes tiles as visited to prevent infinite loops
         while (0 <= nr < rows) and (0 <= nc < cols):
             tile = grid[nr][nc]
             tiles += 1
             print(f"{(r, c)}: tile: {tile}, energized: {tiles}")
-            if (tile == '/') or (tile == '/'):
+            if (tile == '/') or (tile == '\\'):
                 key = (tile, (dr, dc))
                 dr, dc = MIRROR[key]
             elif (tile == '|') or (tile == '-'):
