@@ -11,6 +11,7 @@ DIRECTION = {
     'w': ( 0,-1)
 }
 
+
 MIRROR = {
     ('\\', DIRECTION['e']): DIRECTION['s'],
     ('\\', DIRECTION['w']): DIRECTION['n'],
@@ -32,53 +33,47 @@ def get_split(tile: str, row, col) -> tuple[tuple[int, int], tuple[int, int]] | 
         return DIRECTION['e'], DIRECTION['w']
     return None
 
-def paint_energized_tiles(visited: set, grid: Grid) -> None:
-    energized = []
-    for i in range(len(grid)):
-        row = []
-        for j in range(len(grid[0])):
-            if (i, j) in visited:
-                row.append("#")
-            else:
-                row.append(grid[i][j])
-        energized.append(row)
-    for r in energized:
-        print(''.join(r))
 
-
-def get_energized_tiles(grid: Grid) -> int:
+def get_energized_tiles(grid: Grid, sr=0, sc=0, delta=DIRECTION['e']) -> int:
     rows, cols = len(grid), len(grid[0])
-
-    q = deque([((0, 0), DIRECTION['e'])])
-    visited = {(0, 0)}
+    q = deque([((sr, sc), delta)])
+    visited = set()
 
     while q:
-        # print(f"Queue: {q}")
         (r, c), (dr, dc) = q.popleft()
 
         while (0 <= r < rows) and (0 <= c < cols):
             tile = grid[r][c]
-            visited.add((r, c))
-            # print(f"{(r, c)}: tile: {tile}, energized: {len(visited)}")
-            # TODO: Handle case when you form a loop and infinitely repeats
             if (tile == '/') or (tile == '\\'):
-                key = (tile, (dr, dc))
+                key: tuple[str, tuple[int, int]] = (tile, (dr, dc))
                 dr, dc = MIRROR[key]
+                if ((r, c), (dr, dc)) in visited:
+                    break
             elif (tile == '|') or (tile == '-'):
                 directions = get_split(tile, dr, dc)
-                # print(f"dir: {directions} old_dir: {(dr, dc)}")
                 if directions:
                     d1, d2 = directions
                     if (r + d1[0], c + d1[1]) not in visited:
+                        visited.add(((r, c), (d1[0], d1[1])))
                         q.append(((r, c), d1))
                     if (r + d2[0], c + d2[1]) not in visited:
+                        visited.add(((r, c), (d2[0], d2[1])))
                         q.append(((r, c), d2))
                     break
-            r, c = r + dr, c + dc
-    paint_energized_tiles(visited, grid)
-    print(visited)
-    return len(visited)
 
+            visited.add(((r, c), (dr, dc)))
+            r, c = r + dr, c + dc
+    return len({(r, c) for ((r, c), _) in visited})
+
+
+def solution_1(grid: Grid) -> None:
+    energized = get_energized_tiles(grid)
+    print(energized)
+
+
+def solution_2(grid: Grid) -> None:
+    energized = 0
+    print(energized)
 
 if __name__ == "__main__":
     filename = 'test'
@@ -89,4 +84,5 @@ if __name__ == "__main__":
     with open(filename) as f:
         data = f.read().splitlines()
 
-    print(get_energized_tiles(data))
+    solution_1(data)
+    solution_2(data)
