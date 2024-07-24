@@ -1,8 +1,10 @@
+import concurrent.futures
 import sys
 from collections import deque
 from typing import TypeAlias
 
 Grid: TypeAlias = list[str]
+
 
 DIRECTION = {
     'n': (-1, 0),
@@ -34,12 +36,13 @@ def get_split(tile: str, row, col) -> tuple[tuple[int, int], tuple[int, int]] | 
     return None
 
 
-def get_energized_tiles(grid: Grid, sr=0, sc=0, delta=DIRECTION['e']) -> int:
+def get_energized_tiles(grid: Grid, sr: int, sc: int, direction: tuple[int, int]) -> int:
     rows, cols = len(grid), len(grid[0])
-    q = deque([((sr, sc), delta)])
+    q = deque([((sr, sc), direction)])
     visited = set()
 
     while q:
+        # print(f'Queue: {q}')
         (r, c), (dr, dc) = q.popleft()
 
         while (0 <= r < rows) and (0 <= c < cols):
@@ -53,27 +56,57 @@ def get_energized_tiles(grid: Grid, sr=0, sc=0, delta=DIRECTION['e']) -> int:
                 directions = get_split(tile, dr, dc)
                 if directions:
                     d1, d2 = directions
-                    if (r + d1[0], c + d1[1]) not in visited:
-                        visited.add(((r, c), (d1[0], d1[1])))
+                    # if (r + d1[0], c + d1[1]) not in visited:
+                    if ((r, c), d1) not in visited:
+                        visited.add(((r, c), d1))
                         q.append(((r, c), d1))
-                    if (r + d2[0], c + d2[1]) not in visited:
-                        visited.add(((r, c), (d2[0], d2[1])))
+                    # if (r + d2[0], c + d2[1]) not in visited:
+                    if ((r, c), d2) not in visited:
+                        visited.add(((r, c), d2))
                         q.append(((r, c), d2))
                     break
-
             visited.add(((r, c), (dr, dc)))
             r, c = r + dr, c + dc
     return len({(r, c) for ((r, c), _) in visited})
 
 
+def get_edges(grid: Grid) -> tuple[list[tuple[int, int]], ...]:
+    rows, cols = len(grid), len(grid[0])
+
+    TOP = [(0, i) for i in range(cols)]
+    LEFT = [(i, 0) for i in range(rows)]
+    RIGHT = [(i, cols-1) for i in range(rows)]
+    BOTTOM = [(rows-1, i) for i in range(cols)]
+
+    return TOP, LEFT, RIGHT, BOTTOM
+
+
+
 def solution_1(grid: Grid) -> None:
-    energized = get_energized_tiles(grid)
+    energized = get_energized_tiles(grid, 0, 0, DIRECTION['e'])
     print(energized)
+
+
+def run_get_energized_tiles(args):
+    return get_energized_tiles(*args)
+
+def run_jobs(grid: Grid, edge, direction: str) -> int:
+    result = []
+    args = [(grid, r, c, DIRECTION[direction]) for r, c in edge]
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        result = max(executor.map(run_get_energized_tiles, args))
+    return result
 
 
 def solution_2(grid: Grid) -> None:
-    energized = 0
-    print(energized)
+    energized = []
+    top, left, right, bottom = get_edges(grid)
+    # by running things in parallel you speed up the thing by 2 seconds smh
+    # yep I wasted my time lol
+    for edge, direction in [(top, 's'), (left, 'e'), (right, 'w'), (bottom, 'n')]:
+        energized.append(run_jobs(grid, edge, direction))
+    print(max(energized))
+
 
 if __name__ == "__main__":
     filename = 'test'
