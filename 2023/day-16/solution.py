@@ -42,7 +42,6 @@ def get_energized_tiles(grid: Grid, sr: int, sc: int, direction: tuple[int, int]
     visited = set()
 
     while q:
-        # print(f'Queue: {q}')
         (r, c), (dr, dc) = q.popleft()
 
         while (0 <= r < rows) and (0 <= c < cols):
@@ -56,17 +55,19 @@ def get_energized_tiles(grid: Grid, sr: int, sc: int, direction: tuple[int, int]
                 directions = get_split(tile, dr, dc)
                 if directions:
                     d1, d2 = directions
-                    # if (r + d1[0], c + d1[1]) not in visited:
+                    # check going up or east depending on the tile
                     if ((r, c), d1) not in visited:
                         visited.add(((r, c), d1))
                         q.append(((r, c), d1))
-                    # if (r + d2[0], c + d2[1]) not in visited:
+                    # check going down or west depending on the tile
                     if ((r, c), d2) not in visited:
                         visited.add(((r, c), d2))
                         q.append(((r, c), d2))
                     break
             visited.add(((r, c), (dr, dc)))
             r, c = r + dr, c + dc
+    # set the set for only r and c to avoid double counting
+    # the tiles that were crossed by multiple paths
     return len({(r, c) for ((r, c), _) in visited})
 
 
