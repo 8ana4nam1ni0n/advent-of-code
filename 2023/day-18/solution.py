@@ -51,9 +51,8 @@ def get_perimeter(plan: DigPlan) -> int:
     return sum(p.steps for p in plan)
 
 
-# Sholace algorithm implementation to calculate area of poligon
-# this time we need the perimeter that allows us to get the fill
-# of the inside of the shape including the edges
+# Sholace algorithm implementation to calculate area of poligon but with
+# a twist that includes the edges along with the fill as part of the area
 def calculate_cubic_meters_of_lava(coords: list, perimeter: int) -> int:
     n = len(coords)
     area = 0
