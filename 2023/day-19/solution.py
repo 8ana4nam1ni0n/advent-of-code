@@ -1,6 +1,7 @@
 import operator
 import re
 import sys
+from collections import deque
 
 OPS = {
     '<': operator.lt,
@@ -69,6 +70,61 @@ def solution_1() -> None:
     accepted = [rating for rating in ratings if process_rating(workflows, rating) == 'A']
     result = sum(sum(rating.values()) for rating in accepted)
     print(result)
+
+
+def calculate_combinations(combinations):
+    result = 1
+    for low, high in combinations.values():
+        result *= (high - low + 1)
+    return result
+
+
+# TODO: Clean code  a bit
+def count_accepted_combinations(workflows: Workflows) -> int:
+    accepted = 0
+    xmas_combinations = {'x': (1, 4000), 'm': (1, 4000), 'a': (1, 4000), 's': (1, 4000)}
+    queue = deque([('in', xmas_combinations)])
+
+    while queue:
+        workflow, curr_combination = queue.popleft()
+
+        match workflow:
+            case 'A':
+                accepted += calculate_combinations(curr_combination)
+                continue
+            case 'R':
+                continue
+
+        for rule in workflows[workflow]:
+            if ':' not in rule:
+                queue.append((rule, curr_combination))
+                continue
+            condition, next_workflow = rule.split(':')
+            part, operation, number = condition[0], condition[1], int(condition[2:])
+            low, high = curr_combination[part]
+
+            if operation == '<':
+                true_comb, false_comb = (low, min(number - 1, high)), (max(number, low), high)
+            else:
+                true_comb, false_comb = (max(number + 1, low), high), (low, min(number, high))
+
+            if true_comb[0] <= true_comb[1]:
+                new_combinations = curr_combination.copy()
+                new_combinations[part] = true_comb
+                queue.append((next_workflow, new_combinations))
+
+            if false_comb[0] <= false_comb[1]:
+                curr_combination[part] = false_comb
+
+    return accepted
+
+
+
+@lambda _:_()
+def solution_2() -> None:
+    raw_workflows, _ = get_data()
+    workflows = parse_workflows(raw_workflows)
+    print(count_accepted_combinations(workflows))
 
 
 
